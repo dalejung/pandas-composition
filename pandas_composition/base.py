@@ -1,6 +1,8 @@
 from operator import attrgetter
 import collections
 
+import pandas as pd
+
 def _is_user_class(obj):
     """ Check whether the obj is a UserFrame/UserSeries """
     type_dict = type(obj).__dict__
@@ -150,8 +152,9 @@ class UserPandasObject(object):
         if callable(attr):
             res = attr(*args, **kwargs) 
 
-        # right now we only wrap pd.DataFrame or pd.Series
-        if type(res) is type(self)._pandas_type:
+        # should just add pandas_types so UserSeries can have two panda types
+        if isinstance(res, type(self)._pandas_type) and  \
+           type(res) in [pd.DataFrame, pd.Series, pd.TimeSeries]:
             res = type(self)(res)
             # transfer metadata
             d = self._get('__dict__')
