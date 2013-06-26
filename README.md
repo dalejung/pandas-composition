@@ -7,7 +7,7 @@ pandas-composition enables you to subclass pd.DataFrame and pd.Series. It will p
 import numpy as np
 import pandas as pd
 
-from pandas_composition import UserFrame
+from pandas_composition import UserFrame, UserSeries
 
 class SubFrame(UserFrame):
 
@@ -47,11 +47,29 @@ assert df.bob != pos.bob
 
 sums = pd.rolling_sum(df, 5)
 assert type(sums) is SubFrame
+
+# metadata is retained when series is added to UserFrame. 
+s1 = UserSeries(range(10))
+s1.some_attr = 'please work'
+df['s1'] = s1
+assert df.s1.some_attr == 'please work'
+
+# however this will not work. 
+df.s1.some_attr = 'another value'
+assert df.s1.some_attr != 'another value'
+
+# metadata for series is only retained on `__setitem__` call
 ```
 
 ## Indicator Example
 
 http://nbviewer.ipython.org/5864433
+
+## Gotchas
+
+* I made the choice to have UserFrame and UserSeries only auto-complete the subclass attrs. This is because `pd.DataFrame`/`pd.Series` namespace has to many attributes. The attributes will all still work, but `ipython` won't autocomplete them. If you want access to the actual `pandas` object use the `.pobj` which **will** autocomplete the original names. Note: `UserFrame` will still auto-complete the column names.
+
+* Pickling will work, however backends like HDF5 will not work. The acutal pandas compatible data will be stored. But metadata will be lost.
 
 ## Current Issues
 
