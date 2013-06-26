@@ -150,11 +150,8 @@ class UserPandasObject(object):
         if callable(attr):
             res = attr(*args, **kwargs) 
 
-        # maybe need better way to tell when to wrap?    
-        # do not wrap subclasses of UserFrame/UserSeries
-        is_user_class = _is_user_class(res)
-        if isinstance(res, type(self)._pandas_type) and \
-           not is_user_class:
+        # right now we only wrap pd.DataFrame or pd.Series
+        if type(res) is type(self)._pandas_type:
             res = type(self)(res)
             # transfer metadata
             d = self._get('__dict__')
