@@ -195,7 +195,6 @@ class TestComposition(TestCase):
         test = fr.return_sub()
         assert type(test) is SubFrame
 
-
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
