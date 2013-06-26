@@ -1,9 +1,3 @@
-pandas-composition
-==================
-
-pandas-composition enables you to subclass pd.DataFrame and pd.Series. It will propogate instance variables and class type through most types of operations.
-
-```python
 import numpy as np
 import pandas as pd
 
@@ -47,12 +41,3 @@ assert df.bob != pos.bob
 
 sums = pd.rolling_sum(df, 5)
 assert type(sums) is SubFrame
-```
-
-## Indicator Example
-
-http://nbviewer.ipython.org/5864433
-
-## Current Issues
-
-* The indexers are currently not wrapped so `ix`, `iloc`, etc will still return a `pd.DataFrame` or `pd.Series` https://github.com/dalejung/pandas-composition/issues/1
