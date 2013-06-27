@@ -99,7 +99,6 @@ class UserFrame(pd.DataFrame):
         # this is explicitly for columns. Make sure to error out quickly
         if key not in self.pobj.columns:
             raise AttributeError(key)
-        print 'item'
         res = self[key]
         return res
 
