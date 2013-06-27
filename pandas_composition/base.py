@@ -56,15 +56,13 @@ class UserPandasObject(object):
             return object.__getattribute__(self, name)
 
         try:
-            res = self.__tr_getattr__(name)
-            return res
-        except:
+            return self.__tr_getattr__(name)
+        except AttributeError:
             pass
 
         # this is to support overridden attrs from subclass.
         # TODO: build up a dict of all base classes before UserFrame/UserSeries
         type_dict = type(self).__dict__
-        is_user_class = _is_user_class(self)
         if name in type_dict:
             return object.__getattribute__(self, name) 
 
