@@ -36,11 +36,23 @@ class UserFrame(pd.DataFrame):
         Initialize the col meta. This is for times when we create
         a UserFrame with a block of data such as dict, pd.DataFrame.
         """
-        for k, v in data.iteritems():
+        for k in data:
+            v = data[k]
             self._store_meta(k, v)
 
-    _col_classes = {}
-    _col_meta = {}
+    _col_classes_ = None
+    @property
+    def _col_classes(self):
+        if self._col_classes_ is None:
+            self._col_classes_ = {}
+        return self._col_classes_
+
+    _col_meta_ = None 
+    @property
+    def _col_meta(self):
+        if self._col_meta_ is None:
+            self._col_meta_ = {}
+        return self._col_meta_
 
     def _store_meta(self, key, val):
         """
