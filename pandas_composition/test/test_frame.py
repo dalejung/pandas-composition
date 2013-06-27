@@ -121,6 +121,10 @@ class TestUserFrame(TestCase):
         test = uf.iteritems(True)
         assert correct == test
 
+class SubFrame(UserFrame):
+    pass
+
+sf = UserFrame(tm.makeDataFrame())
 
 if __name__ == '__main__':                                                                                          
     import nose                                                                      

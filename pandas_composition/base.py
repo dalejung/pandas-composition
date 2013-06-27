@@ -56,7 +56,8 @@ class UserPandasObject(object):
             return object.__getattribute__(self, name)
 
         try:
-            return self.__tr_getattr__(name)
+            res = self.__tr_getattr__(name)
+            return res
         except:
             pass
 
@@ -64,7 +65,7 @@ class UserPandasObject(object):
         # TODO: build up a dict of all base classes before UserFrame/UserSeries
         type_dict = type(self).__dict__
         is_user_class = _is_user_class(self)
-        if not is_user_class and name in type_dict:
+        if name in type_dict:
             return object.__getattribute__(self, name) 
 
         if hasattr(self.pobj, name):
