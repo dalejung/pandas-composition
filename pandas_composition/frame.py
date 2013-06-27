@@ -80,6 +80,9 @@ class UserFrame(pd.DataFrame):
         We run the getattr for col name here so that we can box the 
         items with _wrap_series
         """
+        # this is explicitly for columns. Make sure to error out quickly
+        if key not in self.columns:
+            raise AttributeError(key)
         res = self[key]
         return res
 

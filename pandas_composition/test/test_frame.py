@@ -102,12 +102,14 @@ class TestUserFrame(TestCase):
                 return self.ix[:2] 
 
         idf = InfiniteFrame(np.random.randn(10, 10))
-        cols = idf.columns
+        cols = idf.columns # trigger __tr_getattr__
         counts = InfiniteFrame.counts
-        assert 'ix' in counts
+        assert len(counts) == 0 # properly skip __getitem__ in __tr_getattr__
+
+        idf['columns'] # call getitem
+        # in the correct case, self.ix shouldn't find it's way back to __getitem__
         assert 'columns' in counts
-        assert counts['ix'] == 1
-        assert counts['columns'] == 1
+        assert len(counts) == 1
 
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
