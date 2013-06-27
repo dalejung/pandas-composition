@@ -80,7 +80,8 @@ class UserFrame(pd.DataFrame):
         We run the getattr for col name here so that we can box the 
         items with _wrap_series
         """
-        return self[key]
+        res = self[key]
+        return res
 
 # IPYTHON
 def install_ipython_completers():  # pragma: no cover

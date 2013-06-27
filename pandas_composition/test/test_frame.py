@@ -80,6 +80,35 @@ class TestUserFrame(TestCase):
         assert df.bob.bob == 'bob'
         assert df.dale.whee == 'whee'
 
+    def test_infinite_column_loop(self):
+        """
+        https://github.com/dalejung/pandas-composition/issues/5
+        Due to the DataSet changes and how __tr_getattr__ 
+        we can run into an issue with subclasses the override
+        __getitem__  that don't properly handle returning AttributeError
+        for real attributes like ix.
+        """
+        class InfiniteFrame(UserFrame):
+            counts = {} 
+            log = []
+            def __getitem__(self, name):
+                InfiniteFrame.log.append(name)
+                count = InfiniteFrame.counts.setdefault(name, 0)
+                count += 1 
+                InfiniteFrame.counts[name] = count
+                # if not for this count check, we'd go into an infinite loop
+                if count > 5:
+                    raise AttributeError('error through exaustion')
+                return self.ix[:2] 
+
+        idf = InfiniteFrame(np.random.randn(10, 10))
+        cols = idf.columns
+        counts = InfiniteFrame.counts
+        assert 'ix' in counts
+        assert 'columns' in counts
+        assert counts['ix'] == 1
+        assert counts['columns'] == 1
+
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
