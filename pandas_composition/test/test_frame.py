@@ -111,6 +111,17 @@ class TestUserFrame(TestCase):
         assert 'columns' in counts
         assert len(counts) == 1
 
+    def test_userframe_override(self):
+        """
+        UserFrame.iteritems has a second sentinel value that does not
+        return an iterator. It is not being called.
+        """
+        uf = UserFrame({'bob':range(5), 'frank':range(5)})
+        correct = object.__getattribute__(uf, 'iteritems')(True)
+        test = uf.iteritems(True)
+        assert correct == test
+
+
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   

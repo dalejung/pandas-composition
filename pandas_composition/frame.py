@@ -86,6 +86,11 @@ class UserFrame(pd.DataFrame):
         res = self[key]
         return res
 
+    def iteritems(self, sentinel=False):
+        if sentinel:
+            return 10
+        return ((k, self[k]) for k in self)
+
 # IPYTHON
 def install_ipython_completers():  # pragma: no cover
     # add the instance variable added within __init__
