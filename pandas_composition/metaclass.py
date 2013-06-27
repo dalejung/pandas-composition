@@ -73,6 +73,8 @@ def get_methods(pandas_cls):
         methods[name] = meth
 
     # Wrap the magic_methods which won't be called via __getattribute__
+    # Things like __add__ won't run through __getattribute__. We grab them
+    # and wrap below
     magic_methods = [(name, meth) for name, meth in pandas_cls.__dict__.iteritems() \
                      if name.startswith('_') and isinstance(meth, collections.Callable) \
                     and name not in ignore_list]
