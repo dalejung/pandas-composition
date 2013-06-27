@@ -65,6 +65,10 @@ class UserFrame(pd.DataFrame):
             self._col_classes[key] = type(val) 
 
     def __setitem__(self, key, val):
+        # replicate DataFrame behavior and set name to 
+        # dict key.
+        if hasattr(val, 'name'):
+            setattr(val, 'name', key)
         self._store_meta(key, val)
         super(UserFrame, self).__setitem__(key, val)
 

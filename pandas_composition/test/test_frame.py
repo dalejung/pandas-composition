@@ -121,10 +121,20 @@ class TestUserFrame(TestCase):
         test = uf.iteritems(True)
         assert correct == test
 
+    def test_series_name_into_frame(self):
+        """
+        Make sure when we add a series into a frame, 
+        we rename the Series.name to the key value
+        """
+        uf = UserFrame({'bob':range(5), 'frank':range(5)})
+        s = pd.Series(range(5), name='some_name')
+        uf['new_name'] = s
+        assert uf.new_name.name == 'new_name'
+
 class SubFrame(UserFrame):
     pass
 
-sf = UserFrame(tm.makeDataFrame())
+sf = UserFrame(index=range(10))
 
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
