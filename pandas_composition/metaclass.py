@@ -13,6 +13,7 @@ class PandasMeta(type):
             new_attrs.update(dct)
             _init_args = init_args(pandas_cls)
             new_attrs['_init_args'] = _init_args
+            print new_attrs.get('__getstate__', None)
         else: # should be subclass of UserFrame/UserSeries
             pass
 

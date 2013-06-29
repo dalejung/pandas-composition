@@ -1,4 +1,6 @@
 from unittest import TestCase
+import cPickle as pickle
+import pickle as pickle
 
 import pandas as pd
 import pandas.util.testing as tm
@@ -6,9 +8,15 @@ import numpy as np
 
 import pandas_composition.frame as pframe
 import pandas_composition as composition
+from trtools.util.tempdir import TemporaryDirectory
 UserFrame = composition.UserFrame
 UserSeries = composition.UserSeries
 
+class SubFrame(UserFrame):
+    pass
+
+class SubSeries(UserSeries):
+    pass
 
 class TestUserFrame(TestCase):
 
@@ -121,6 +129,17 @@ class TestUserFrame(TestCase):
         test = uf.iteritems(True)
         assert correct == test
 
+    def test_userframe_subclass_override(self):
+        """
+        Test that a SubFrame class will call
+        UserFrame.method that is overridding a 
+        DataFrame.method
+        """
+        uf = SubFrame({'bob':range(5), 'frank':range(5)})
+        correct = object.__getattribute__(uf, 'iteritems')(True)
+        test = uf.iteritems(True)
+        assert correct == test
+
     def test_series_name_into_frame(self):
         """
         Make sure when we add a series into a frame, 
@@ -131,10 +150,58 @@ class TestUserFrame(TestCase):
         uf['new_name'] = s
         assert uf.new_name.name == 'new_name'
 
-class SubFrame(UserFrame):
-    pass
+    def test_frame_pickle(self):
+        """
+        Test that the UserFrame pickles correctly
+        """
+        sf = UserFrame(np.random.randn(10, 10), index=range(10))
+        s = UserSeries(range(10))
+        s.frank = '123'
+        sf['whee'] = s
+        sf.bob = 'bob'
+        with TemporaryDirectory() as td:
+            fn = td + '/test.save'
+            with open(fn, 'wb') as f:
+                pickle.dump(sf, f, protocol=0)
 
-sf = UserFrame(index=range(10))
+            with open(fn, 'rb') as f:
+                test = pickle.load(f)
+            tm.assert_almost_equal(sf, test)
+            assert isinstance(test, UserFrame)
+            assert test.bob == 'bob'
+            # test that _col_classes, _col_meta propogated
+            assert isinstance(test.whee, UserSeries)
+            assert test.whee.frank == '123'
+
+    def test_frame_subclass_pickle(self):
+        """
+        Test that the UserFrame pickles correctly
+        """
+
+        sf = SubFrame(np.random.randn(10, 10), index=range(10))
+        s = UserSeries(range(10))
+        s.frank = '123'
+        sf['whee'] = s
+        s = SubSeries(range(10))
+        s.frank = 55
+        sf['whee2'] = s
+        sf.bob = 'bob'
+        with TemporaryDirectory() as td:
+            fn = td + '/test.save'
+            with open(fn, 'wb') as f:
+                pickle.dump(sf, f, protocol=0)
+
+            with open(fn, 'rb') as f:
+                test = pickle.load(f)
+            tm.assert_almost_equal(sf, test)
+            assert isinstance(test, SubFrame)
+            assert test.bob == 'bob'
+            # test that _col_classes, _col_meta propogated
+            assert isinstance(test.whee, UserSeries)
+            assert test.whee.frank == '123'
+
+            assert isinstance(test.whee2, SubSeries)
+            assert test.whee2.frank == 55
 
 if __name__ == '__main__':                                                                                          
     import nose                                                                      

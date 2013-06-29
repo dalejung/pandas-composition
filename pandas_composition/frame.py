@@ -107,6 +107,17 @@ class UserFrame(pd.DataFrame):
             return 10
         return ((k, self[k]) for k in self)
 
+    __reduce_ex__ = object.__reduce_ex__
+
+    def __getstate__(self):
+        print 'userframe getstate'
+        data = {}
+        data['frame_meta'] = self._get('__dict__')
+        return data
+
+    def __setstate__(self, state):
+        self._get('__dict__').update(state['frame_meta'])
+
 # IPYTHON
 def install_ipython_completers():  # pragma: no cover
     # add the instance variable added within __init__
