@@ -1,5 +1,3 @@
-import pandas as pd
-
 from pandas_composition.metaclass import PandasMeta
 
 def _get_meta(obj):
@@ -101,7 +99,7 @@ class UserFrame(pd.DataFrame):
             raise AttributeError(key)
         res = self[key]
         return res
-
+    #  For now just a dummy method to test subclasses overridding superclasses
     def iteritems(self, sentinel=False):
         if sentinel:
             return 10
