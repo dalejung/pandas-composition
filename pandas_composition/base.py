@@ -60,11 +60,15 @@ class UserPandasObject(object):
         except AttributeError:
             pass
 
-        # this is to support overridden attrs from subclass.
-        # TODO: build up a dict of all base classes before UserFrame/UserSeries
-        type_dict = type(self).__dict__
-        if name in type_dict:
-            return object.__getattribute__(self, name) 
+        # Run through mro and use overridden values.
+        mro = type(self).__mro__
+        for kls in mro:
+            # stop after pandas-composition class and before pandas classes
+            if kls in [pd.DataFrame, pd.Series, pd.TimeSeries, pd.Panel]:
+                break
+            type_dict = kls.__dict__
+            if name in type_dict:
+                return object.__getattribute__(self, name) 
 
         if hasattr(self.pobj, name):
             return self._wrap(name) 
