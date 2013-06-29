@@ -1,6 +1,5 @@
 from unittest import TestCase
 import cPickle as pickle
-import pickle as pickle
 
 import pandas as pd
 import pandas.util.testing as tm
@@ -162,7 +161,7 @@ class TestUserFrame(TestCase):
         with TemporaryDirectory() as td:
             fn = td + '/test.save'
             with open(fn, 'wb') as f:
-                pickle.dump(sf, f, protocol=0)
+                pickle.dump(sf, f, protocol=2)
 
             with open(fn, 'rb') as f:
                 test = pickle.load(f)

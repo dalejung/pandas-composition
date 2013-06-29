@@ -1,4 +1,5 @@
 from unittest import TestCase
+import cPickle as pickle
 
 import pandas as pd
 import pandas.util.testing as tm
@@ -6,6 +7,8 @@ import numpy as np
 
 import pandas_composition as composition
 UserSeries = composition.UserSeries
+
+from trtools.util.tempdir import TemporaryDirectory
 
 class TestSeries(TestCase):
 
@@ -37,6 +40,23 @@ class TestSeries(TestCase):
         s = SubSeries(range(10), index=ind)
         bools = s > 0
         assert type(bools) is SubSeries
+
+    def test_series_pickle(self):
+        """
+        Test that the UserSeries pickles correctly
+        """
+        s = UserSeries(range(10))
+        s.frank = '123'
+        with TemporaryDirectory() as td:
+            fn = td + '/test.save'
+            with open(fn, 'wb') as f:
+                pickle.dump(s, f, protocol=0)
+
+            with open(fn, 'rb') as f:
+                test = pickle.load(f)
+            tm.assert_almost_equal(s, test)
+            assert isinstance(test, UserSeries)
+            assert test.frank == '123'
 
 if __name__ == '__main__':                                                                                          
     import nose                                                                      

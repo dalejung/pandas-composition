@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from numpy import ndarray
 
 from pandas_composition.metaclass import PandasMeta
 
@@ -34,7 +35,22 @@ class UserSeries(pd.Series):
             self.pobj = obj
             return
 
-        assert False
+    # needed to trigger pickle to use UserSeries pickling methods
+    __reduce_ex__ = object.__reduce_ex__
+
+    def __reduce__(self):
+        """ essentially wrap around pd.Series.__reduce__ and add out meta """
+        object_state = list(super(UserSeries, self).__reduce__())
+        meta = self._get('__dict__').copy()
+        pobj = meta.pop('pobj') # remove pobj
+        object_state[2] = (object_state[2], meta)
+        return tuple(object_state)
+
+    def __setstate__(self, state):
+        """ Call normal pd.Series stuff and update with meta  """
+        state, meta = state
+        super(UserSeries, self).__setstate__(state)
+        self._get('__dict__').update(meta)
 
 # IPYTHON
 def install_ipython_completers():  # pragma: no cover
