@@ -107,16 +107,26 @@ class UserFrame(pd.DataFrame):
             return 10
         return ((k, self[k]) for k in self)
 
+    # needed to trigger pickle to use UserFrame pickling methods
     __reduce_ex__ = object.__reduce_ex__
 
     def __getstate__(self):
-        print 'userframe getstate'
+        """
+        Expicitly split up pobj and frame_meta.
+        """
         data = {}
-        data['frame_meta'] = self._get('__dict__')
+        fdict = self._get('__dict__').copy()
+        pobj = fdict.pop('pobj')
+        data['pobj'] = pobj
+        data['frame_meta'] = fdict
+        data['version'] = 1
         return data
 
     def __setstate__(self, state):
-        self._get('__dict__').update(state['frame_meta'])
+        version = state['version']
+        if version == 1:
+            self.pobj = state['pobj']
+            self._get('__dict__').update(state['frame_meta'])
 
 # IPYTHON
 def install_ipython_completers():  # pragma: no cover

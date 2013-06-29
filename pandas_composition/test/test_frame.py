@@ -177,7 +177,6 @@ class TestUserFrame(TestCase):
         """
         Test that the UserFrame pickles correctly
         """
-
         sf = SubFrame(np.random.randn(10, 10), index=range(10))
         s = UserSeries(range(10))
         s.frank = '123'
@@ -202,6 +201,40 @@ class TestUserFrame(TestCase):
 
             assert isinstance(test.whee2, SubSeries)
             assert test.whee2.frank == 55
+
+    def test_split_getstate(self):
+        """
+        Test that __getstate__ splits pandas data from 
+        pandas-composition metadata. Then attempts to pickle
+        and reconstruct original subclass
+        """
+        sf = SubFrame(np.random.randn(10, 10), index=range(10))
+        s = UserSeries(range(10))
+        s.frank = '123'
+        sf['whee'] = s
+        s = SubSeries(range(10))
+        s.frank = 55
+        sf['whee2'] = s
+        sf.bob = 'bob'
+
+        state = sf.__getstate__()
+        pobj = state['pobj']
+        meta = state['frame_meta']
+        # reconstruct sf from empty subclass
+        test = SubFrame()
+        test.pobj = pobj # set pandas object
+        test._get('__dict__').update(meta) # set metadata
+
+        tm.assert_almost_equal(sf, test)
+        assert isinstance(test, SubFrame)
+        assert test.bob == 'bob'
+        # test that _col_classes, _col_meta propogated
+        assert isinstance(test.whee, UserSeries)
+        assert test.whee.frank == '123'
+
+        assert isinstance(test.whee2, SubSeries)
+        assert test.whee2.frank == 55
+
 
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
