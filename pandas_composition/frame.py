@@ -1,3 +1,5 @@
+import pandas as pd
+
 from pandas_composition.metaclass import PandasMeta
 
 def _get_meta(obj):
