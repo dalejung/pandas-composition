@@ -234,6 +234,21 @@ class TestUserFrame(TestCase):
         assert isinstance(test.whee2, SubSeries)
         assert test.whee2.frank == 55
 
+    def test_default_boxer(self):
+        """
+        set an autoboxer for Frame. This allows you to extend Frame functionality
+        to a contained Series. Default autoboxer will only work on pd.Series/TimeSeries
+        so it won't clobber real subclasses.
+        """
+        class ASeries(UserSeries):
+            pass
+
+        class AutoBoxFrame(UserFrame):
+            _default_boxer = ASeries
+
+        af = AutoBoxFrame(index=range(10))
+        af['bob'] = range(10)
+        assert isinstance(af.bob, ASeries), '_default_series should box bob into ASeries %s' % type(af.bob)
 
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
