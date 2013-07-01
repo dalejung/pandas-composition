@@ -283,6 +283,23 @@ class TestUserFrame(TestCase):
         assert isinstance(df['bs'], BSeries)
         assert df.bs.bob == 'bob'
 
+    def test_init_args(self):
+        """
+        Support init params for things like `df + 1`. While metadata propogates, 
+        currently (2013/07/01) wrapping fails because it calls the constructor with no
+        kwargs
+        """
+        class SubInitFrame(UserFrame):
+            def __init__(self, *args, **kwargs):
+                bob = kwargs.pop('bob')
+                self.bob = bob
+                super(SubInitFrame, self).__init__(*args, **kwargs)
+
+        ss = SubInitFrame(range(10), bob=123)
+        assert ss.bob == 123
+        test = ss + 1 # currently errors
+        assert test.bob == 123
+
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
