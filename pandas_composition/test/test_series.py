@@ -58,6 +58,23 @@ class TestSeries(TestCase):
             assert isinstance(test, UserSeries)
             assert test.frank == '123'
 
+    def test_init_args(self):
+        """
+        Support init params for things like `series + 1`. While metadata propogates, 
+        currently (2013/07/01) wrapping fails because it calls the constructor instead
+        of calling .view
+        """
+        class SubSeries(UserSeries):
+            def __init__(self, *args, **kwargs):
+                bob = kwargs.pop('bob')
+                self.bob = bob
+                super(SubSeries, self).__init__(*args, **kwargs)
+
+        ss = SubSeries(range(10), bob=123)
+        assert ss.bob == 123
+        test = ss + 1 # currently errors
+        assert test.bob == 123
+
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
