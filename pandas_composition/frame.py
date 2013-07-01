@@ -1,4 +1,8 @@
+import types
+import collections
+
 import pandas as pd
+import numpy as np
 
 from pandas_composition.metaclass import PandasMeta
 
@@ -82,10 +86,50 @@ class UserFrame(pd.DataFrame):
             val.__dict__.update(meta)
         return val
 
+    _default_boxer = None
+    _default_boxer_func = None
+
+    @property
+    def default_boxer(self):
+        """
+        Caches and returns a default boxer.
+        """
+        if self._default_boxer_func is not None:
+            return self._default_boxer_func
+
+        boxer = self._default_boxer
+        boxer = self._wrap_boxer(boxer)
+        return boxer
+
+    def _wrap_boxer(self, boxer):
+        """
+        Returns the proper callable for the various eligible boxer types. 
+
+        Parameters
+        ----------
+        boxer : None, np.ndarray subclass, or callable
+
+        None : returns an identity function
+        np.ndarray : will call Series.view(boxer)
+        Callable : Simple calls the callable
+        """
+        if boxer is None:
+            return lambda x: x
+        if isinstance(boxer, types.TypeType) and issubclass(boxer, np.ndarray):
+            return lambda val: val.view(boxer)
+        if isinstance(boxer, collections.Callable):
+            return boxer
+        raise Exception("_default_boxer must be a ndarray subclass or a callable")
+
     def __getitem__(self, key):
         if key in self.columns:
             val = super(UserFrame, self).__getitem__(key)
-            return self._wrap_series(key, val)
+            # attempt wrap
+            val = self._wrap_series(key, val)
+            if type(val) in [pd.Series, pd.TimeSeries]:
+                # if pandas object, try to wrap default
+                val = self.default_boxer(val)
+            return val
         raise AttributeError(key)
 
     def __tr_getattr__(self, key):

@@ -243,12 +243,45 @@ class TestUserFrame(TestCase):
         class ASeries(UserSeries):
             pass
 
+        class BSeries(UserSeries):
+            pass
+
         class AutoBoxFrame(UserFrame):
             _default_boxer = ASeries
 
-        af = AutoBoxFrame(index=range(10))
-        af['bob'] = range(10)
-        assert isinstance(af.bob, ASeries), '_default_series should box bob into ASeries %s' % type(af.bob)
+        df = AutoBoxFrame(index=range(10))
+        df['bob'] = range(10)
+        err_msg = '_default_boxer should box bob into ASeries %s' % type(df.bob)
+        assert isinstance(df.bob, ASeries), err_msg
+        assert isinstance(df['bob'], ASeries), err_msg
+
+        # assert that boxing uses view and points to same data
+        df.bob[0] = 10
+        assert df.bob[0] == 10
+        bob = df.bob
+        bob[0] = 11
+        assert df.bob[0] == 11
+
+        # np array
+        df['np'] = np.arange(10)
+        err_msg = '_default_boxer should box np into ASeries %s' % type(df.np)
+        assert isinstance(df.np, ASeries), err_msg
+        assert isinstance(df['np'], ASeries), err_msg
+
+        # assert we don't wrap UserSeries and it's subclasses
+        us = UserSeries(range(10))
+        us.bob = 'bob'
+        df['us'] = us
+        assert isinstance(df.us, UserSeries)
+        assert isinstance(df['us'], UserSeries)
+        assert df.us.bob == 'bob'
+
+        bs = BSeries(range(10))
+        bs.bob = 'bob'
+        df['bs'] = bs
+        assert isinstance(df.bs, BSeries)
+        assert isinstance(df['bs'], BSeries)
+        assert df.bs.bob == 'bob'
 
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
