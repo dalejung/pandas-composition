@@ -68,7 +68,12 @@ def install_ipython_completers():  # pragma: no cover
 
     @complete_object.when_type(UserSeries)
     def complete_user_series(obj, prev_completions):
-        return [c for c in itertools.chain(obj._get('__dict__'), obj.__class__.__dict__) \
+        dicts = [obj._get('__dict__'), obj.__class__.__dict__]
+        # add ability to define completers
+        if hasattr(obj, '__completers__'):
+            dicts.append(getattr(obj, '__completers__'))
+        labels = itertools.chain(*dicts)
+        return [c for c in labels
                     if isinstance(c, basestring) and py3compat.isidentifier(c)]                                          
 # Importing IPython brings in about 200 modules, so we want to avoid it unless
 # we're in IPython (when those modules are loaded anyway).

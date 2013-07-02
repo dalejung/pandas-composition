@@ -185,6 +185,9 @@ def install_ipython_completers():  # pragma: no cover
     @complete_object.when_type(UserFrame)
     def complete_user_frame(obj, prev_completions):
         dicts = [obj._get('__dict__'), obj.__class__.__dict__]
+        # add ability to define completers
+        if hasattr(obj, '__completers__'):
+            dicts.append(getattr(obj, '__completers__'))
         column_names = obj.columns
         labels = itertools.chain(column_names, *dicts)
         completions = [c for c in labels 
