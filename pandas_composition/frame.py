@@ -83,7 +83,10 @@ class UserFrame(pd.DataFrame):
         if key in self._col_classes:
             val = val.view(self._col_classes[key])
             meta = self._col_meta[key]
-            val.__dict__.update(meta)
+            if hasattr(val, 'meta'):
+                val.meta.update(meta)
+            else:
+                val.__dict__.update(meta)
         return val
 
     _default_boxer = None
