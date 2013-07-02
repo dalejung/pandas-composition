@@ -300,6 +300,28 @@ class TestUserFrame(TestCase):
         test = ss + 1 # currently errors
         assert test.bob == 123
 
+    def test_init_args_with_series(self):
+        """
+        Make sure having a pd.Series as a meta attribute 
+        works correctly when taken from a UserFrame
+        """
+        class SubInitSeries(UserSeries):
+            def __init__(self, *args, **kwargs):
+                bob = kwargs.pop('bob')
+                self.bob = bob
+                super(SubInitSeries, self).__init__(*args, **kwargs)
+
+        class SubInitFrame(UserFrame):
+            def __init__(self, *args, **kwargs):
+                bob = kwargs.pop('bob')
+                self.bob = bob
+                super(SubInitFrame, self).__init__(*args, **kwargs)
+
+        ss = SubInitFrame(bob=123, index=range(10))
+        series = SubInitSeries(range(10), bob=pd.Series(range(10)))
+        ss['series'] = series
+        ss.series.bob # errors now
+
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
