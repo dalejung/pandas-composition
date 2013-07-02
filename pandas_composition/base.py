@@ -77,10 +77,30 @@ class UserPandasObject(object):
 
     def __setattr__(self, name, value):
         if name in self._get('__dict__'):
-            return object.__setattr__(self, name, value)
+            self.set_meta(name, value)
+            return
         if hasattr(self.pobj, name):
-            return object.__setattr__(self.pobj, name, value)
-        return object.__setattr__(self, name, value)
+            object.__setattr__(self.pobj, name, value)
+            return
+        self.set_meta(name, value)
+
+    _init_arg_check = True
+    def set_meta(self, name, value):
+        """
+        By meta, we mean handling the object's __dict__ and 
+        not the pobj.__dict__
+        """
+        # note sometimes during .view, we won't have this var available
+        check_meta = not hasattr(self, '_init_arg_check') or self._init_arg_check
+        if check_meta and name in self._init_args:
+            # note this is largely a failsafe, we shouldn't get to this
+            # point via setattr since it'll match the hasattr(self.pobj, name)
+            raise Exception('Cannot have member variables that clash with pandas constructor args')
+        object.__setattr__(self, name, value)
+
+    @property
+    def meta(self):
+        return self._get('__dict__')
 
     def __getattr__(self, name):
         # unset the inherited logic here. 

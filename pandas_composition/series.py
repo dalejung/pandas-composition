@@ -49,7 +49,14 @@ class UserSeries(pd.Series):
     def __setstate__(self, state):
         """ Call normal pd.Series stuff and update with meta  """
         state, meta = state
-        super(UserSeries, self).__setstate__(state)
+        # hack to get around setstate error
+        self._init_arg_check = False
+        try:
+            super(UserSeries, self).__setstate__(state)
+        except:
+            raise
+        finally:
+            self._init_arg_check = True
         self._get('__dict__').update(meta)
 
 # IPYTHON

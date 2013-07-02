@@ -67,7 +67,7 @@ def get_methods(pandas_cls):
     ignore_list = ['__class__', '__metaclass__']
     methods = {}
     user_methods = [(name, meth) for name, meth in UserPandasObject.__dict__.iteritems() \
-                     if isinstance(meth, collections.Callable) and name not in ignore_list]
+                     if isinstance(meth, (collections.Callable, property)) and name not in ignore_list]
 
     for name, meth in user_methods:
         methods[name] = meth

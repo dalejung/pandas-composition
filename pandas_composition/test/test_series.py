@@ -75,6 +75,35 @@ class TestSeries(TestCase):
         test = ss + 1 # currently errors
         assert test.bob == 123
 
+    def test_init_args_set_meta_check(self):
+        """
+        Support init params for things like `series + 1`. While metadata propogates, 
+        currently (2013/07/01) wrapping fails because it calls the constructor instead
+        of calling .view
+        """
+        class SubSeries(UserSeries):
+            def __init__(self, *args, **kwargs):
+                bob = kwargs.pop('bob')
+                self.bob = bob
+                super(SubSeries, self).__init__(*args, **kwargs)
+
+        ss = SubSeries(range(10), bob=123)
+        assert ss.bob == 123
+
+        # pandas constructors vars go to pandas object
+        # this is due to the fact that pandas sets its init args as
+        # member variables
+        ss.copy = True
+        assert 'copy' not in ss.meta
+        assert 'copy' in ss.pobj.__dict__
+
+        try:
+            ss.set_meta('copy', False)
+        except:
+            pass
+        else:
+            assert False, 'copy should fail as it is a constructor arg'
+
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
