@@ -158,13 +158,18 @@ class UserPandasObject(object):
         # should just add pandas_types so UserSeries can have two panda types
         if isinstance(res, type(self)._pandas_type) and  \
            type(res) in [pd.DataFrame, pd.Series, pd.TimeSeries]:
-            res = type(self)(res)
+            meta = self._get('__dict__')
+            # pass in meta as kwargs in case init requires them
+            # this assumes that init arg and member name will
+            # always be the same. i.e. self.bob = bob
+            # make sure to not init args the same name as
+            # pandas constructor arguments
+            res = type(self)(res, **meta)
             # transfer metadata
-            d = self._get('__dict__')
             new_dict = res._get('__dict__')
-            for k in d.keys():
+            for k in meta.keys():
                 # skip df
                 if k == 'pobj':
                     continue
-                new_dict[k] = d[k]
+                new_dict[k] = meta[k]
         return res
