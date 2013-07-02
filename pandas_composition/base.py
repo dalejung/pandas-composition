@@ -1,4 +1,5 @@
 from operator import attrgetter
+import types
 import collections
 
 import pandas as pd
@@ -9,11 +10,27 @@ def _is_user_class(obj):
     is_user_class = '_pandas_type' in type_dict
     return is_user_class
 
+def _wrapped_method(self, name, *args, **kwargs):
+    """
+    All wrapped method of pobj will come through here. 
+    This includes:
+        * magic methods grabbed in `get_methods`
+        * functions wrapped in UserPandasObject._wrap
+    """
+    return self._delegate(name, *args, **kwargs)
+
 def _wrap_callable(self, name):
-    # delay delegation
-    def _wrapped(*args, **kwargs):
-        return self._delegate(name, *args, **kwargs)
-    return _wrapped
+    # wrapped on demand, note we have self
+    def _wrapped(self, *args, **kwargs):
+        return _wrapped_method(self, name, *args, **kwargs)
+    return types.MethodType(_wrapped, self, self.__class__)
+
+def _wrap_method(name):
+    # this is used for function definitions used by the metaclass.
+    # we have no self 
+    def _meth(self, *args, **kwargs):
+        return _wrapped_method(self, name, *args, **kwargs)
+    return _meth
 
 # used by _wrap
 # Done this way to allow other module to extend how to handle
@@ -127,6 +144,8 @@ class UserPandasObject(object):
     
     def _wrap(self, name):
         """
+        Wrap attribute of **pobj**. This doesn't run on object methods. 
+
         Parameters
         ----------
         name : string

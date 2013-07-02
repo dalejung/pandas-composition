@@ -1,7 +1,7 @@
 import collections
 import inspect
 
-from pandas_composition.base import UserPandasObject
+from pandas_composition.base import UserPandasObject, _wrap_method
 
 class PandasMeta(type):
     def __new__(cls, name, bases, dct):
@@ -85,10 +85,6 @@ def get_methods(pandas_cls):
 
     return methods
 
-def _wrap_method(name):
-    def _meth(self, *args, **kwargs):
-        return self._delegate(name, *args, **kwargs)
-    return _meth
 
 def init_args(pandas_type):
     init_func = getattr(pandas_type, '__init__')
