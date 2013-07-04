@@ -107,6 +107,7 @@ class LazyFrame(UserFrame):
         # we play it safe and eval
         if name not in ['pobj']:
             self.eval()
+        print name
         return super(LazyFrame, self)._delegate(name, *args, **kwargs)
 
     def defer_op(self, name, *args, **kwargs):
@@ -121,3 +122,7 @@ class LazyFrame(UserFrame):
         full, ns = self.gen_ne()
         return "LazyFrame: \n{full}".format(full=full)
 
+    def _repr_html_(self):
+        if self.pobj:
+            return self.pobj._repr_html_()
+        return repr(self)
