@@ -51,19 +51,19 @@ class LazyFrame(UserFrame):
         expr = PandasExpression(right, op)
         self.expressions.append(expr)
 
-    def eval(self):
+    def eval(self, inplace=False):
         # already evaled
         if self.pobj:
             return self.pobj
 
         full, ns = self.gen_ne()
         res = ne.evaluate(full, local_dict=ns)
-        # inplace
         if res.ndim == 1:
             pobj = pd.Series(res)
-            self.pobj = pobj
         if res.ndim == 2:
             pobj = pd.DataFrame(res)
+
+        if inplace:
             self.pobj = pobj
         return pobj
 
@@ -112,7 +112,7 @@ class LazyFrame(UserFrame):
         # if not deferred or part of pass safe-list
         # we play it safe and eval
         if name not in ['pobj']:
-            self.eval()
+            self.eval(inplace=True)
         return super(LazyFrame, self)._delegate(name, *args, **kwargs)
 
     def defer_op(self, name, *args, **kwargs):
