@@ -65,6 +65,10 @@ assert df.s1.some_attr != 'another value'
 
 http://nbviewer.ipython.org/5864433
 
+## LazyDataFrame
+
+http://nbviewer.ipython.org/5924008
+
 ## Gotchas
 
 * I made the choice to have UserFrame and UserSeries only auto-complete the subclass attrs. This is because `pd.DataFrame`/`pd.Series` namespace has to many attributes. The attributes will all still work, but `ipython` won't autocomplete them. If you want access to the actual `pandas` object use the `.pobj` which **will** autocomplete the original names. Note: `UserFrame` will still auto-complete the column names.
