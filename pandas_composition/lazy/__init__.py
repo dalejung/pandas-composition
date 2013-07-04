@@ -6,14 +6,20 @@ import numexpr as ne
 
 from pandas_composition import UserFrame
 
-deferred_op = ['__add__', '__sub__', '__mul__', '__div__', '__pow__']
+deferred_op = ['__add__', '__sub__', '__mul__', '__div__', '__pow__', 
+               '__radd__', '__rsub__', '__rmul__', '__rdiv__', '__rpow__']
 eval_op = ['__array__', '.values']
 op_trans = {}
 op_trans['__add__'] = '+'
+op_trans['__radd__'] = '+'
 op_trans['__sub__'] = '-'
+op_trans['__rsub__'] = '-'
 op_trans['__mul__'] = '*'
+op_trans['__rmul__'] = '*'
 op_trans['__div__'] = '/'
+op_trans['__rdiv__'] = '/'
 op_trans['__pow__'] = '**'
+op_trans['__rpow__'] = '**'
 
 class PandasExpression(object):
     def __init__(self, right, op):
