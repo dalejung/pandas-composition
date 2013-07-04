@@ -45,7 +45,11 @@ class LazyFrame(UserFrame):
         super(LazyFrame, self).__init__(*args, **kwargs)
         self.expressions = deque() 
         self.add_expr(self.pobj, None)
-        self.pobj = pd.DataFrame() # un evaluate
+
+        evaled = kwargs.pop('evaled', False)
+        self.evaled = evaled
+        if not evaled:
+            self.pobj = pd.DataFrame() # un evaluate
 
     def add_expr(self, right, op):
         expr = PandasExpression(right, op)
@@ -65,6 +69,7 @@ class LazyFrame(UserFrame):
 
         if inplace:
             self.pobj = pobj
+            self.evaled = True
         return pobj
 
     def gen_ne(self):
