@@ -163,38 +163,7 @@ class TestComposition(TestCase):
         df = tm.makeDataFrame()
         fr = InitFrame(df, bob='woot')
         assert fr.bob == 'woot'
-
-    def test_subclass_wrap_monkey_patch(self):
-        """
-        Ran into an issue where a monkey patched function
-        return a different subclass of UserFrame. 
-
-        The _wrap checking was reboxing the frame into
-        another subclass.
-        """
-        class SubSeries(UserSeries):
-            pass
-        def return_sub_series(self):
-            return SubSeries(self)
-        # monkey patch
-        pd.Series.return_sub = return_sub_series
-
-        s = UserSeries(range(10))
-        test = s.return_sub()
-        assert type(test) is SubSeries
-
-        class SubFrame(UserFrame):
-            pass
-        def return_sub_frame(self):
-            return SubFrame(self)
-        # monkey patch
-        pd.DataFrame.return_sub = return_sub_frame
-
-        df = tm.makeDataFrame()
-        fr = UserFrame(df)
-        test = fr.return_sub()
-        assert type(test) is SubFrame
-
+         
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
