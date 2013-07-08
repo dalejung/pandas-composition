@@ -125,15 +125,21 @@ class UserFrame(pd.DataFrame):
         raise Exception("_default_boxer must be a ndarray subclass or a callable")
 
     def __getitem__(self, key):
-        if key in self.columns:
-            val = super(UserFrame, self).__getitem__(key)
-            # attempt wrap
-            val = self._wrap_series(key, val)
-            if type(val) in [pd.Series, pd.TimeSeries]:
-                # if pandas object, try to wrap default
-                val = self.default_boxer(val)
-            return val
-        raise AttributeError(key)
+        try:
+            if key in self.columns:
+                val = super(UserFrame, self).__getitem__(key)
+                # attempt wrap
+                val = self._wrap_series(key, val)
+                if type(val) in [pd.Series, pd.TimeSeries]:
+                    # if pandas object, try to wrap default
+                    val = self.default_boxer(val)
+                return val
+        except:
+            pass
+
+        # fallback to regular dataframe
+        val = super(UserFrame, self).__getitem__(key)
+        return val
 
     def __tr_getattr__(self, key):
         """
