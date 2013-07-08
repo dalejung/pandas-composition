@@ -109,6 +109,7 @@ class TestSeries(TestCase):
         A monkey-patched method on base pandas object is callable
         but will pass in that base type instead of the subclass
         """
+        return # not sure if this is error
         def type_method(self):
             return type(self)
 
