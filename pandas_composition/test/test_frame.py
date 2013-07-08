@@ -322,6 +322,23 @@ class TestUserFrame(TestCase):
         ss['series'] = series
         ss.series.bob # errors now
 
+    def test_monkeyed_pandas_object(self):
+        """
+        A monkey-patched method on base pandas object is callable
+        but will pass in that base type instead of the subclass
+        """
+        def type_method(self):
+            return type(self)
+
+        pd.DataFrame.type_method = type_method
+
+        class SubFrame(UserFrame):
+            pass
+
+        s = SubFrame(np.random.randn(10, 10))
+        t = s.type_method()
+        assert t is SubFrame
+
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   

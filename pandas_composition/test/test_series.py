@@ -104,6 +104,23 @@ class TestSeries(TestCase):
         else:
             assert False, 'copy should fail as it is a constructor arg'
 
+    def test_monkeyed_pandas_object(self):
+        """
+        A monkey-patched method on base pandas object is callable
+        but will pass in that base type instead of the subclass
+        """
+        def type_method(self):
+            return type(self)
+
+        pd.Series.type_method = type_method
+
+        class SubSeries(UserSeries):
+            pass
+
+        s = SubSeries(range(10))
+        t = s.type_method()
+        assert t is SubSeries
+
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
