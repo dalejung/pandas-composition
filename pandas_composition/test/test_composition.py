@@ -61,23 +61,12 @@ class TestComposition(TestCase):
         us = s.view(UserSeries)
         tm.assert_series_equal(s, us)
 
-        arr = np.array(range(10))
-        arrs = pd.Series(arr)
-        arrus = arr.view(UserSeries)
-        tm.assert_series_equal(arrs, arrus)
-
     def test_datetime_us_view(self):    
         data = range(0, 10)
         ind = pd.date_range(start="1/1/2000", freq="D", periods=len(data))
         s = pd.Series(data, index=ind)
         us = s.view(UserSeries)
         tm.assert_series_equal(s, us)
-
-        arr = np.array(range(10))
-        arrs = pd.Series(arr)
-        arrus = arr.view(UserSeries)
-        tm.assert_series_equal(arrs, arrus)
-
         us.view(UserSeries)
 
     def test_subframe(self):
