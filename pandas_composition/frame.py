@@ -4,6 +4,10 @@ import collections
 import pandas as pd
 import numpy as np
 
+NDFrame = pd.core.generic.NDFrame
+_internal_names = NDFrame._internal_names[:]
+_internal_names.remove('name')
+
 from pandas_composition.metaclass import PandasMeta
 
 def _get_meta(obj):
@@ -14,8 +18,11 @@ def _get_meta(obj):
         d = getter('__dict__')
         meta.update(d)
     meta.update(getattr(obj, '__dict__', {}))
-    meta.pop('_index', None) # don't store index
     meta.pop('pobj', None) # don't store pobj
+    # don't store internal names
+    for key in _internal_names:
+        meta.pop(key, None)
+    meta.pop('_item_cache')
     return meta
 
 class UserFrame(pd.DataFrame):
@@ -81,8 +88,11 @@ class UserFrame(pd.DataFrame):
         Wrap series data into correct class with metadata
         """
         if key in self._col_classes:
-            val = val.view(self._col_classes[key])
+            cls = self._col_classes[key]
             meta = self._col_meta[key]
+            # TODO if cls is pd.Series, then this can error if
+            # meta has a non init variable. 
+            val =  cls(val, **meta)
             if hasattr(val, 'meta'):
                 val.meta.update(meta)
             else:
@@ -124,18 +134,32 @@ class UserFrame(pd.DataFrame):
             return boxer
         raise Exception("_default_boxer must be a ndarray subclass or a callable")
 
+    _boxer_passthrough = None
+
+    def boxer_passthrough(self):
+        """
+        Gather the varaibles from UserFrame that we want to pass down
+        to the autoboxer class.
+        """
+        if not self._boxer_passthrough:
+            return {}
+
+        meta = {}
+        for k in self._boxer_passthrough:
+            meta[k] = getattr(self, k)
+
+        return meta
+
     def __getitem__(self, key):
-        try:
-            if key in self.columns:
-                val = super(UserFrame, self).__getitem__(key)
-                # attempt wrap
-                val = self._wrap_series(key, val)
-                if type(val) in [pd.Series, pd.TimeSeries]:
-                    # if pandas object, try to wrap default
-                    val = self.default_boxer(val)
-                return val
-        except:
-            pass
+        if key in self.columns:
+            val = super(UserFrame, self).__getitem__(key)
+            # attempt wrap
+            val = self._wrap_series(key, val)
+            if type(val) in [pd.Series, pd.TimeSeries]:
+                # if pandas object, try to wrap default
+                meta = self.boxer_passthrough()
+                val = self.default_boxer(val, **meta)
+            return val
 
         # fallback to regular dataframe
         val = super(UserFrame, self).__getitem__(key)
@@ -152,8 +176,17 @@ class UserFrame(pd.DataFrame):
         # this is explicitly for columns. Make sure to error out quickly
         if key not in self.pobj.columns:
             raise AttributeError(key)
-        res = self[key]
+
+        # At this point we SHOULD not error. If we do, we raise another
+        # error incase the self[key] raised an AttributeError which would just
+        # get eaten by UserPandasObject.__getattribute__
+        # this way the error will bubble to the top
+        try:
+            res = self[key]
+        except:
+            raise Exception("Failed getting attribute")
         return res
+
     #  For now just a dummy method to test subclasses overridding superclasses
     def iteritems(self, sentinel=False):
         if sentinel:

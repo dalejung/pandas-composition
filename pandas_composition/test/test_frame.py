@@ -283,6 +283,34 @@ class TestUserFrame(TestCase):
         assert isinstance(df['bs'], BSeries)
         assert df.bs.bob == 'bob'
 
+    def test_default_boxer_passthrough(self):
+        """
+        When an autoboxer Series has an init param, 
+        sometimes we want a variable on the Series to be 
+        pass to that Series.init. 
+
+        It's possible to get this kind behavior via a function 
+        boxer, but this just makes it automated. 
+        """
+        class ASeries(UserSeries):
+            def __init__(self, *args, **kwargs):
+                self.bob = kwargs.pop('bob')
+
+        class AutoBoxFrame(UserFrame):
+            _default_boxer = ASeries
+            _boxer_passthrough = ['bob']
+
+        df = tm.makeDataFrame()
+        af = AutoBoxFrame(df)
+        af.bob = 'hello'
+
+        s = af["A"]
+        # make sure we're not storing the data vai col_meta
+        assert "bob" not in af._col_meta['A']
+        # verify that bob is passed to autoboxed series
+        assert s.bob == 'hello'
+
+
     def test_init_args(self):
         """
         Support init params for things like `df + 1`. While metadata propogates, 
@@ -339,6 +367,7 @@ class TestUserFrame(TestCase):
         s = SubFrame(np.random.randn(10, 10))
         t = s.type_method()
         assert t is SubFrame
+
 
 if __name__ == '__main__':                                                                                          
     import nose                                                                      

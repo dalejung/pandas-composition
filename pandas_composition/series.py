@@ -14,50 +14,28 @@ class UserSeries(pd.Series):
         # only pass the kwargs that pandas want
         panda_kwargs = {k:v for k, v in kwargs.items() if k in cls._init_args}
         pobj = cls._pandas_type(*args, **panda_kwargs)
-        instance = pobj.view(cls)
+
+        instance = object.__new__(cls)
+        instance.pobj = pobj
         return instance
-
-    def __array_finalize__(self, obj):
-        if isinstance(obj, UserSeries):
-            # self.values will be correct, but we don't have the index
-            # TODO go over this logic again. it works but uh
-            # not too happy about it
-            object.__setattr__(self, '_index', obj._index)
-            self.pobj = self.view(pd.Series)
-            return
-
-        if isinstance(obj, pd.Series):
-            self.pobj = obj
-            return
-
-        if isinstance(obj, np.ndarray):
-            obj = pd.Series(obj)
-            self.pobj = obj
-            return
 
     # needed to trigger pickle to use UserSeries pickling methods
     __reduce_ex__ = object.__reduce_ex__
 
-    def __reduce__(self):
+    def __getstate__(self):
         """ essentially wrap around pd.Series.__reduce__ and add out meta """
-        object_state = list(super(UserSeries, self).__reduce__())
+        data = {}
         meta = self._get('__dict__').copy()
         pobj = meta.pop('pobj') # remove pobj
-        object_state[2] = (object_state[2], meta)
-        return tuple(object_state)
+        data['pobj'] = pobj
+        data['meta'] = meta
+        data['version'] = 1
+        return data
 
     def __setstate__(self, state):
         """ Call normal pd.Series stuff and update with meta  """
-        state, meta = state
-        # hack to get around setstate error
-        self._init_arg_check = False
-        try:
-            super(UserSeries, self).__setstate__(state)
-        except:
-            raise
-        finally:
-            self._init_arg_check = True
-        self._get('__dict__').update(meta)
+        self.pobj = state['pobj']
+        self._get('__dict__').update(state['meta'])
 
 # IPYTHON
 def install_ipython_completers():  # pragma: no cover

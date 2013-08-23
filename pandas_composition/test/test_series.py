@@ -122,6 +122,23 @@ class TestSeries(TestCase):
         t = s.type_method()
         assert t is SubSeries
 
+    def test_np_where(self):
+        us = UserSeries(range(10))
+        bools = us > 5
+        tvals = np.repeat(1, len(us))
+        fvals = np.repeat(0, len(us))
+        wh = np.where(bools, tvals, fvals)
+
+        assert isinstance(wh, UserSeries)
+
+    def test_series_view(self):
+        """
+        """
+
+us = UserSeries(range(10))
+us.view('i8')
+
+
 if __name__ == '__main__':                                                                                          
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
