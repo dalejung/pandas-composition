@@ -4,6 +4,10 @@ import collections
 import pandas as pd
 import numpy as np
 
+NDFrame = pd.core.generic.NDFrame
+_internal_names = NDFrame._internal_names[:]
+_internal_names.remove('name')
+
 from pandas_composition.metaclass import PandasMeta
 
 def _get_meta(obj):
@@ -14,12 +18,11 @@ def _get_meta(obj):
         d = getter('__dict__')
         meta.update(d)
     meta.update(getattr(obj, '__dict__', {}))
-    meta.pop('_index', None) # don't store index
     meta.pop('pobj', None) # don't store pobj
-    # new pd.Series objects I need to purse post Series ->NDFrame
-    meta.pop('_data', None) 
+    # don't store internal names
+    for key in _internal_names:
+        meta.pop(key, None)
     meta.pop('_item_cache')
-    meta.pop('_subtyp')
     return meta
 
 class UserFrame(pd.DataFrame):
@@ -87,6 +90,8 @@ class UserFrame(pd.DataFrame):
         if key in self._col_classes:
             cls = self._col_classes[key]
             meta = self._col_meta[key]
+            # TODO if cls is pd.Series, then this can error if
+            # meta has a non init variable. 
             val =  cls(val, **meta)
             if hasattr(val, 'meta'):
                 val.meta.update(meta)
