@@ -176,7 +176,15 @@ class UserFrame(pd.DataFrame):
         # this is explicitly for columns. Make sure to error out quickly
         if key not in self.pobj.columns:
             raise AttributeError(key)
-        res = self[key]
+
+        # At this point we SHOULD not error. If we do, we raise another
+        # error incase the self[key] raised an AttributeError which would just
+        # get eaten by UserPandasObject.__getattribute__
+        # this way the error will bubble to the top
+        try:
+            res = self[key]
+        except:
+            raise Exception("Failed getting attribute")
         return res
 
     #  For now just a dummy method to test subclasses overridding superclasses
