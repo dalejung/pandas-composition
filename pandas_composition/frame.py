@@ -134,6 +134,22 @@ class UserFrame(pd.DataFrame):
             return boxer
         raise Exception("_default_boxer must be a ndarray subclass or a callable")
 
+    _boxer_passthrough = None
+
+    def boxer_passthrough(self):
+        """
+        Gather the varaibles from UserFrame that we want to pass down
+        to the autoboxer class.
+        """
+        if not self._boxer_passthrough:
+            return {}
+
+        meta = {}
+        for k in self._boxer_passthrough:
+            meta[k] = getattr(self, k)
+
+        return meta
+
     def __getitem__(self, key):
         if key in self.columns:
             val = super(UserFrame, self).__getitem__(key)
@@ -141,7 +157,8 @@ class UserFrame(pd.DataFrame):
             val = self._wrap_series(key, val)
             if type(val) in [pd.Series, pd.TimeSeries]:
                 # if pandas object, try to wrap default
-                val = self.default_boxer(val)
+                meta = self.boxer_passthrough()
+                val = self.default_boxer(val, **meta)
             return val
 
         # fallback to regular dataframe

@@ -7,7 +7,6 @@ from pandas_composition.metaclass import PandasSuperMeta, PandasMeta
 
 # monkey patch
 def view(self, dtype):
-
     if issubclass(dtype, pd.Series):
         return dtype(self)
 
