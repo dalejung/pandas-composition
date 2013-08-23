@@ -16,6 +16,10 @@ def _get_meta(obj):
     meta.update(getattr(obj, '__dict__', {}))
     meta.pop('_index', None) # don't store index
     meta.pop('pobj', None) # don't store pobj
+    # new pd.Series objects I need to purse post Series ->NDFrame
+    meta.pop('_data', None) 
+    meta.pop('_item_cache')
+    meta.pop('_subtyp')
     return meta
 
 class UserFrame(pd.DataFrame):
@@ -81,8 +85,9 @@ class UserFrame(pd.DataFrame):
         Wrap series data into correct class with metadata
         """
         if key in self._col_classes:
-            val = val.view(self._col_classes[key])
+            cls = self._col_classes[key]
             meta = self._col_meta[key]
+            val =  cls(val, **meta)
             if hasattr(val, 'meta'):
                 val.meta.update(meta)
             else:
@@ -125,17 +130,14 @@ class UserFrame(pd.DataFrame):
         raise Exception("_default_boxer must be a ndarray subclass or a callable")
 
     def __getitem__(self, key):
-        try:
-            if key in self.columns:
-                val = super(UserFrame, self).__getitem__(key)
-                # attempt wrap
-                val = self._wrap_series(key, val)
-                if type(val) in [pd.Series, pd.TimeSeries]:
-                    # if pandas object, try to wrap default
-                    val = self.default_boxer(val)
-                return val
-        except:
-            pass
+        if key in self.columns:
+            val = super(UserFrame, self).__getitem__(key)
+            # attempt wrap
+            val = self._wrap_series(key, val)
+            if type(val) in [pd.Series, pd.TimeSeries]:
+                # if pandas object, try to wrap default
+                val = self.default_boxer(val)
+            return val
 
         # fallback to regular dataframe
         val = super(UserFrame, self).__getitem__(key)
