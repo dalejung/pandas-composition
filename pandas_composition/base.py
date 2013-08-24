@@ -10,26 +10,26 @@ def _is_user_class(obj):
     is_user_class = '_pandas_type' in type_dict
     return is_user_class
 
-def _wrapped_method(self, name, *args, **kwargs):
+def _wrapped_method(self, _meth_name, *args, **kwargs):
     """
     All wrapped method of pobj will come through here. 
     This includes:
         * magic methods grabbed in `get_methods`
         * functions wrapped in UserPandasObject._wrap
     """
-    return self._delegate(name, *args, **kwargs)
+    return self._delegate(_meth_name, *args, **kwargs)
 
-def _wrap_callable(self, name):
+def _wrap_callable(self, _meth_name):
     # wrapped on demand, note we have self
     def _wrapped(self, *args, **kwargs):
-        return _wrapped_method(self, name, *args, **kwargs)
+        return _wrapped_method(self, _meth_name, *args, **kwargs)
     return types.MethodType(_wrapped, self, self.__class__)
 
-def _wrap_method(name):
+def _wrap_method(_meth_name):
     # this is used for function definitions used by the metaclass.
     # we have no self 
     def _meth(self, *args, **kwargs):
-        return _wrapped_method(self, name, *args, **kwargs)
+        return _wrapped_method(self, _meth_name, *args, **kwargs)
     return _meth
 
 # used by _wrap
@@ -164,7 +164,7 @@ class UserPandasObject(object):
         # immediately delegate to self.pboj
         return self._delegate(name)
         
-    def _delegate(self, name, *args, **kwargs):
+    def _delegate(self, _attr_name, *args, **kwargs):
         """
         Parameters
         ----------
@@ -189,7 +189,7 @@ class UserPandasObject(object):
             Series/DataFrame, this will autobox the results into the original class. 
             This is intended
         """
-        attr = self.pget(name)
+        attr = self.pget(_attr_name)
         res = attr
         if callable(attr):
             res = attr(*args, **kwargs) 
