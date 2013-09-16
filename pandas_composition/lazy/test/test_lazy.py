@@ -25,7 +25,7 @@ class TestLazy(TestCase):
         """
         correct = df + 1
         test = lf + 1
-        assert not test.pobj
+        assert test.pobj.empty
         # following code should trigger eval
         tm.assert_almost_equal(correct, test)
 

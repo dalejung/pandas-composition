@@ -57,7 +57,7 @@ class LazyFrame(UserFrame):
 
     def eval(self, inplace=False):
         # already evaled
-        if self.pobj:
+        if not self.pobj.empty:
             return self.pobj
 
         full, ns = self.gen_ne()
