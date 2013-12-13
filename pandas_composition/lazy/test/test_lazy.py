@@ -20,41 +20,41 @@ class TestLazy(TestCase):
         pass
 
     def test_simple_eval(self):
-        """ 
+        """
         Test simple binary oeprations
         """
         correct = df + 1
         test = lf + 1
         assert test.pobj.empty
         # following code should trigger eval
-        tm.assert_almost_equal(correct, test)
+        tm.assert_frame_equal(correct, test)
 
     def test_simple_op(self):
-        """ 
+        """
         Test simple binary oeprations
         """
         correct = df + 1
         test = lf + 1
-        tm.assert_almost_equal(correct, test)
+        tm.assert_frame_equal(correct, test)
 
         correct = df - 1
         test = lf - 1
-        tm.assert_almost_equal(correct, test)
+        tm.assert_frame_equal(correct, test)
 
         correct = df * 10.0
         test = lf * 10.0
-        tm.assert_almost_equal(correct, test)
+        tm.assert_frame_equal(correct, test)
 
         correct = df / 10.0
         test = lf / 10.0
-        tm.assert_almost_equal(correct.values, test.values)
+        tm.assert_frame_equal(correct, test)
 
         correct = df ** 10.0
         test = lf ** 10.0
-        tm.assert_almost_equal(correct.values, test.values)
+        tm.assert_frame_equal(correct, test)
 
     def test_complex(self):
-        """ 
+        """
         Test simple binary oeprations
         """
         correct = df ** 10.0 + 1 + df * df
@@ -62,5 +62,5 @@ class TestLazy(TestCase):
         tm.assert_almost_equal(correct.values, test.values)
 
 if __name__ == '__main__':
-    import nose                                                                      
-    nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
+    import nose
+    nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)

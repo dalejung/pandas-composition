@@ -56,12 +56,12 @@ class TestComposition(TestCase):
         assert wh.dtype == int
         tm.assert_series_equal(wh, bools.astype(int))
 
-    def test_us_view(self):    
+    def test_us_view(self):
         s = pd.Series(range(0, 10), index=range(10, 20))
         us = s.view(UserSeries)
         tm.assert_series_equal(s, us)
 
-    def test_datetime_us_view(self):    
+    def test_datetime_us_view(self):
         data = range(0, 10)
         ind = pd.date_range(start="1/1/2000", freq="D", periods=len(data))
         s = pd.Series(data, index=ind)
@@ -98,7 +98,7 @@ class TestComposition(TestCase):
         """
         class CommonBase(composition.PandasSuperMeta):
             """
-            Test common base 
+            Test common base
             """
             _bob = object()
 
@@ -123,7 +123,7 @@ class TestComposition(TestCase):
 
         df = tm.makeDataFrame()
         fr = CommonFrame(df)
-        tm.assert_almost_equal(fr, df)
+        tm.assert_frame_equal(fr, df)
         assert fr.bob is bob
         assert fr.tail().bob is bob
 
@@ -134,14 +134,14 @@ class TestComposition(TestCase):
         """
         class InitSeries(UserSeries):
             def __init__(self, *args, **kwargs):
-                # required 
+                # required
                 bob = kwargs.pop('bob')
                 self.bob = bob
                 super(InitSeries, self).__init__(*args, **kwargs)
 
         class InitFrame(UserFrame):
             def __init__(self, *args, **kwargs):
-                # required 
+                # required
                 bob = kwargs.pop('bob')
                 self.bob = bob
                 super(InitFrame, self).__init__(*args, **kwargs)
@@ -152,7 +152,7 @@ class TestComposition(TestCase):
         df = tm.makeDataFrame()
         fr = InitFrame(df, bob='woot')
         assert fr.bob == 'woot'
-         
-if __name__ == '__main__':                                                                                          
-    import nose                                                                      
-    nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
+
+if __name__ == '__main__':
+    import nose
+    nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)
