@@ -7,7 +7,7 @@ import numpy as np
 
 import pandas_composition.frame as pframe
 import pandas_composition as composition
-from trtools.util.tempdir import TemporaryDirectory
+from pandas_composition.util.tempdir import TemporaryDirectory
 UserFrame = composition.UserFrame
 UserSeries = composition.UserSeries
 
@@ -90,23 +90,23 @@ class TestUserFrame(TestCase):
     def test_infinite_column_loop(self):
         """
         https://github.com/dalejung/pandas-composition/issues/5
-        Due to the DataSet changes and how __tr_getattr__ 
+        Due to the DataSet changes and how __tr_getattr__
         we can run into an issue with subclasses the override
         __getitem__  that don't properly handle returning AttributeError
         for real attributes like ix.
         """
         class InfiniteFrame(UserFrame):
-            counts = {} 
+            counts = {}
             log = []
             def __getitem__(self, name):
                 InfiniteFrame.log.append(name)
                 count = InfiniteFrame.counts.setdefault(name, 0)
-                count += 1 
+                count += 1
                 InfiniteFrame.counts[name] = count
                 # if not for this count check, we'd go into an infinite loop
                 if count > 5:
                     raise AttributeError('error through exaustion')
-                return self.ix[:2] 
+                return self.ix[:2]
 
         idf = InfiniteFrame(np.random.randn(10, 10))
         cols = idf.columns # trigger __tr_getattr__
@@ -131,7 +131,7 @@ class TestUserFrame(TestCase):
     def test_userframe_subclass_override(self):
         """
         Test that a SubFrame class will call
-        UserFrame.method that is overridding a 
+        UserFrame.method that is overridding a
         DataFrame.method
         """
         uf = SubFrame({'bob':range(5), 'frank':range(5)})
@@ -141,7 +141,7 @@ class TestUserFrame(TestCase):
 
     def test_series_name_into_frame(self):
         """
-        Make sure when we add a series into a frame, 
+        Make sure when we add a series into a frame,
         we rename the Series.name to the key value
         """
         uf = UserFrame({'bob':range(5), 'frank':range(5)})
@@ -203,7 +203,7 @@ class TestUserFrame(TestCase):
 
     def test_split_getstate(self):
         """
-        Test that __getstate__ splits pandas data from 
+        Test that __getstate__ splits pandas data from
         pandas-composition metadata. Then attempts to pickle
         and reconstruct original subclass
         """
@@ -285,12 +285,12 @@ class TestUserFrame(TestCase):
 
     def test_default_boxer_passthrough(self):
         """
-        When an autoboxer Series has an init param, 
-        sometimes we want a variable on the Series to be 
-        pass to that Series.init. 
+        When an autoboxer Series has an init param,
+        sometimes we want a variable on the Series to be
+        pass to that Series.init.
 
-        It's possible to get this kind behavior via a function 
-        boxer, but this just makes it automated. 
+        It's possible to get this kind behavior via a function
+        boxer, but this just makes it automated.
         """
         class ASeries(UserSeries):
             def __init__(self, *args, **kwargs):
@@ -313,7 +313,7 @@ class TestUserFrame(TestCase):
 
     def test_init_args(self):
         """
-        Support init params for things like `df + 1`. While metadata propogates, 
+        Support init params for things like `df + 1`. While metadata propogates,
         currently (2013/07/01) wrapping fails because it calls the constructor with no
         kwargs
         """
@@ -330,7 +330,7 @@ class TestUserFrame(TestCase):
 
     def test_init_args_with_series(self):
         """
-        Make sure having a pd.Series as a meta attribute 
+        Make sure having a pd.Series as a meta attribute
         works correctly when taken from a UserFrame
         """
         class SubInitSeries(UserSeries):
@@ -369,6 +369,6 @@ class TestUserFrame(TestCase):
         assert t is SubFrame
 
 
-if __name__ == '__main__':                                                                                          
-    import nose                                                                      
-    nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
+if __name__ == '__main__':
+    import nose
+    nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)

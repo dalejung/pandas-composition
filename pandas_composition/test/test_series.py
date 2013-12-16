@@ -8,7 +8,7 @@ import numpy as np
 import pandas_composition as composition
 UserSeries = composition.UserSeries
 
-from trtools.util.tempdir import TemporaryDirectory
+from pandas_composition.util.tempdir import TemporaryDirectory
 
 class TestSeries(TestCase):
 
@@ -23,9 +23,9 @@ class TestSeries(TestCase):
 
     def test_timeseries_vs_series(self):
         """
-        Due to the auto changing of Series to TimeSeries when 
-        having a DatetimeIndex my _wrap check had a problem 
-        with it's direct check. Technically, UserSeries has 
+        Due to the auto changing of Series to TimeSeries when
+        having a DatetimeIndex my _wrap check had a problem
+        with it's direct check. Technically, UserSeries has
         two pandas types, pd.Series and pd.TimeSeries
         """
         class SubSeries(UserSeries):
@@ -60,7 +60,7 @@ class TestSeries(TestCase):
 
     def test_init_args(self):
         """
-        Support init params for things like `series + 1`. While metadata propogates, 
+        Support init params for things like `series + 1`. While metadata propogates,
         currently (2013/07/01) wrapping fails because it calls the constructor instead
         of calling .view
         """
@@ -77,7 +77,7 @@ class TestSeries(TestCase):
 
     def test_init_args_set_meta_check(self):
         """
-        Support init params for things like `series + 1`. While metadata propogates, 
+        Support init params for things like `series + 1`. While metadata propogates,
         currently (2013/07/01) wrapping fails because it calls the constructor instead
         of calling .view
         """
@@ -139,6 +139,6 @@ us = UserSeries(range(10))
 us.view('i8')
 
 
-if __name__ == '__main__':                                                                                          
-    import nose                                                                      
-    nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
+if __name__ == '__main__':
+    import nose
+    nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)
