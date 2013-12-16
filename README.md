@@ -1,5 +1,6 @@
 pandas-composition
 ==================
+[![Build Status](https://api.travis-ci.org/dalejung/pandas-composition.png)](https://travis-ci.org/dalejung/pandas-composition)
 
 pandas-composition enables you to subclass pd.DataFrame and pd.Series. It will propogate instance variables and class type through most types of operations.
 
