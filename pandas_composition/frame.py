@@ -6,7 +6,12 @@ import numpy as np
 
 NDFrame = pd.core.generic.NDFrame
 _internal_names = NDFrame._internal_names[:]
-_internal_names.remove('name')
+
+# Newer pandas does not have name in _internal_names
+try:
+    _internal_names.remove('name')
+except ValueError:
+    pass
 
 from pandas_composition.metaclass import PandasMeta
 
@@ -22,7 +27,8 @@ def _get_meta(obj):
     # don't store internal names
     for key in _internal_names:
         meta.pop(key, None)
-    meta.pop('_item_cache')
+    # older versions of pandas didn't have _item_cache in _internal_names
+    meta.pop('_item_cache', None)
     return meta
 
 class UserFrame(pd.DataFrame):
@@ -43,7 +49,7 @@ class UserFrame(pd.DataFrame):
             self._init_col_meta(data)
 
     def _init_col_meta(self, data):
-        """ 
+        """
         Initialize the col meta. This is for times when we create
         a UserFrame with a block of data such as dict, pd.DataFrame.
         """
@@ -58,7 +64,7 @@ class UserFrame(pd.DataFrame):
             self._col_classes_ = {}
         return self._col_classes_
 
-    _col_meta_ = None 
+    _col_meta_ = None
     @property
     def _col_meta(self):
         if self._col_meta_ is None:
@@ -73,10 +79,10 @@ class UserFrame(pd.DataFrame):
         if hasattr(val, '__dict__'):
             d = _get_meta(val).copy()
             self._col_meta[key] = d
-            self._col_classes[key] = type(val) 
+            self._col_classes[key] = type(val)
 
     def __setitem__(self, key, val):
-        # replicate DataFrame behavior and set name to 
+        # replicate DataFrame behavior and set name to
         # dict key.
         if hasattr(val, 'name'):
             setattr(val, 'name', key)
@@ -91,7 +97,7 @@ class UserFrame(pd.DataFrame):
             cls = self._col_classes[key]
             meta = self._col_meta[key]
             # TODO if cls is pd.Series, then this can error if
-            # meta has a non init variable. 
+            # meta has a non init variable.
             val =  cls(val, **meta)
             if hasattr(val, 'meta'):
                 val.meta.update(meta)
@@ -116,7 +122,7 @@ class UserFrame(pd.DataFrame):
 
     def _wrap_boxer(self, boxer):
         """
-        Returns the proper callable for the various eligible boxer types. 
+        Returns the proper callable for the various eligible boxer types.
 
         Parameters
         ----------
@@ -170,7 +176,7 @@ class UserFrame(pd.DataFrame):
         __tr_getattr__ runs before trying to grab from the
         pobj.
 
-        We run the getattr for col name here so that we can box the 
+        We run the getattr for col name here so that we can box the
         items with _wrap_series
         """
         # this is explicitly for columns. Make sure to error out quickly
@@ -229,7 +235,7 @@ def install_ipython_completers():  # pragma: no cover
             dicts.append(getattr(obj, '__completers__'))
         column_names = obj.columns
         labels = itertools.chain(column_names, *dicts)
-        completions = [c for c in labels 
+        completions = [c for c in labels
                        if isinstance(c, basestring) and py3compat.isidentifier(c)]
         return completions
 
@@ -237,7 +243,7 @@ def install_ipython_completers():  # pragma: no cover
 # we're in IPython (when those modules are loaded anyway).
 import sys
 if "IPython" in sys.modules:  # pragma: no cover
-    try: 
+    try:
         install_ipython_completers()
     except Exception:
-        pass 
+        pass
