@@ -153,6 +153,17 @@ class TestComposition(TestCase):
         fr = InitFrame(df, bob='woot')
         assert fr.bob == 'woot'
 
+    def test_subscriptable_callables(self):
+        """
+        Test that Indexers still work.
+        """
+        s = pd.Series(range(1, 10), index=range(11, 20))
+        us = UserSeries(s)
+        assert us.iloc[0] == 1
+        assert us.iloc[5] == 6
+        assert us.loc[11] == 1
+        assert us.loc[19] == 9
+
 if __name__ == '__main__':
     import nose
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)

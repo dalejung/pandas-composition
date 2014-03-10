@@ -12,22 +12,39 @@ def _is_user_class(obj):
 
 def _wrapped_method(self, _meth_name, *args, **kwargs):
     """
-    All wrapped method of pobj will come through here. 
+    All wrapped method of pobj will come through here.
     This includes:
         * magic methods grabbed in `get_methods`
         * functions wrapped in UserPandasObject._wrap
     """
     return self._delegate(_meth_name, *args, **kwargs)
 
+class Wrapped(object):
+    """
+    A wrapped attribute that will currently delegate method call
+    and properly pass through getitem/setitem. This is to support
+    Indexers (.ix,.iloc) which are both callable and subscriptable
+    """
+    def __init__(self, obj, meth_name):
+        self.obj = obj
+        self.meth_name = meth_name
+
+    def __call__(self, *args, **kwargs):
+        return _wrapped_method(self.obj, self.meth_name, *args, **kwargs)
+
+    def __getitem__(self, key):
+        return self.obj.pget(self.meth_name)[key]
+
+    def __setitem__(self, key, val):
+        self.obj.pget(self.meth_name)[key] = val
+
 def _wrap_callable(self, _meth_name):
     # wrapped on demand, note we have self
-    def _wrapped(self, *args, **kwargs):
-        return _wrapped_method(self, _meth_name, *args, **kwargs)
-    return types.MethodType(_wrapped, self, self.__class__)
+    return Wrapped(self, _meth_name)
 
 def _wrap_method(_meth_name):
     # this is used for function definitions used by the metaclass.
-    # we have no self 
+    # we have no self
     def _meth(self, *args, **kwargs):
         return _wrapped_method(self, _meth_name, *args, **kwargs)
     return _meth
@@ -40,7 +57,7 @@ WRAP_HANDLERS.append((collections.Callable, _wrap_callable))
 
 class UserPandasObject(object):
     """
-        Base methods of a quasi pandas subclass. 
+        Base methods of a quasi pandas subclass.
 
         The general idea is that all methods from this class will
         wrap the output into the same class and transfer metadata
@@ -52,23 +69,23 @@ class UserPandasObject(object):
     def _get(self, name):
         """ Get base attribute. Not pandas object """
         return object.__getattribute__(self, name)
-    
+
     def __getattribute__(self, name):
         """
             #NOTE The reason we use __getattribute__ is that we're
             subclassing pd.DataFrame. That means that our SubClass instance
-            will have DataFrame methods that will be called on itself and 
-            *not* the self.pobj. 
+            will have DataFrame methods that will be called on itself and
+            *not* the self.pobj.
 
             This is confusing but in essense, UserFrame's self is an empty DataFrame.
             So calling its methods would operate on an empty DataFrame. We want
-            to call the methods on pobj, which is where the data lives. 
+            to call the methods on pobj, which is where the data lives.
 
             We will subclass the DataFrame to trick internal pandas machinery
             into thinking this class quacks like a duck.
         """
         # special attribute that need to go straight to this obj
-        if name in ['pget', 'pobj', '_delegate', '_wrap', '_get', 
+        if name in ['pget', 'pobj', '_delegate', '_wrap', '_get',
                     '__class__', '__array_finalize__', 'view', '__tr_getattr__']:
             return object.__getattribute__(self, name)
 
@@ -85,12 +102,12 @@ class UserPandasObject(object):
                 break
             type_dict = kls.__dict__
             if name in type_dict:
-                return object.__getattribute__(self, name) 
+                return object.__getattribute__(self, name)
 
         if hasattr(self.pobj, name):
-            return self._wrap(name) 
-        
-        return object.__getattribute__(self, name) 
+            return self._wrap(name)
+
+        return object.__getattribute__(self, name)
 
     def __setattr__(self, name, value):
         if name in self._get('__dict__'):
@@ -104,7 +121,7 @@ class UserPandasObject(object):
     _init_arg_check = True
     def set_meta(self, name, value):
         """
-        By meta, we mean handling the object's __dict__ and 
+        By meta, we mean handling the object's __dict__ and
         not the pobj.__dict__
         """
         # note sometimes during .view, we won't have this var available
@@ -120,7 +137,7 @@ class UserPandasObject(object):
         return self._get('__dict__')
 
     def __getattr__(self, name):
-        # unset the inherited logic here. 
+        # unset the inherited logic here.
         raise AttributeError(name)
 
     def __tr_getattr__(self, name):
@@ -141,16 +158,16 @@ class UserPandasObject(object):
         getter = attrgetter(name)
         attr = getter(self.pobj)
         return attr
-    
+
     def _wrap(self, name):
         """
-        Wrap attribute of **pobj**. This doesn't run on object methods. 
+        Wrap attribute of **pobj**. This doesn't run on object methods.
 
         Parameters
         ----------
         name : string
             name of attr found on self.pobj
-        
+
         If the attr is callable, return a closure that calls the original
         method and wraps it's output..
 
@@ -163,36 +180,36 @@ class UserPandasObject(object):
 
         # immediately delegate to self.pboj
         return self._delegate(name)
-        
+
     def _delegate(self, _attr_name, *args, **kwargs):
         """
         Parameters
         ----------
         name : string
             name of attr found on self.pobj
-        *args, **kwargs 
+        *args, **kwargs
             optional args that are passed along to method call
 
-        Grab attr of self.pobj. If callable, call immeidately. 
-        Then we box the output into the original type. 
+        Grab attr of self.pobj. If callable, call immeidately.
+        Then we box the output into the original type.
 
         This is so things like
 
         >>> res = subclass_df.tail(10)
         >>> assert type(res) == type(subclass_df)
-        
+
         are True. This is to address the big annoyance where you lose
         the class type when calling methods or attrs.
 
         Note:
             This has the side affect that if you monkey patch a method or property onto
-            Series/DataFrame, this will autobox the results into the original class. 
+            Series/DataFrame, this will autobox the results into the original class.
             This is intended
         """
         attr = self.pget(_attr_name)
         res = attr
         if callable(attr):
-            res = attr(*args, **kwargs) 
+            res = attr(*args, **kwargs)
 
         # should just add pandas_types so UserSeries can have two panda types
         if isinstance(res, type(self)._pandas_type) and  \
