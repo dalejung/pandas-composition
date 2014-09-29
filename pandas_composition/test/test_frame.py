@@ -1,5 +1,5 @@
 from unittest import TestCase
-import cPickle as pickle
+import pickle
 
 import pandas as pd
 import pandas.util.testing as tm
@@ -323,7 +323,7 @@ class TestUserFrame(TestCase):
                 self.bob = bob
                 super(SubInitFrame, self).__init__(*args, **kwargs)
 
-        ss = SubInitFrame(range(10), bob=123)
+        ss = SubInitFrame(list(range(10)), bob=123)
         assert ss.bob == 123
         test = ss + 1 # currently errors
         assert test.bob == 123
@@ -370,5 +370,17 @@ class TestUserFrame(TestCase):
 
 
 if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)
+    class ASeries(UserSeries):
+        def __init__(self, *args, **kwargs):
+            self.bob = kwargs.pop('bob')
+
+    class AutoBoxFrame(UserFrame):
+        _default_boxer = ASeries
+        _boxer_passthrough = ['bob']
+
+    df = tm.makeDataFrame()
+    af = AutoBoxFrame(df)
+    af.bob = 'hello'
+
+    #import nose
+    #nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)

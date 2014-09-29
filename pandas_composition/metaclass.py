@@ -66,7 +66,7 @@ def get_methods(pandas_cls):
     """
     ignore_list = ['__class__', '__metaclass__']
     methods = {}
-    user_methods = [(name, meth) for name, meth in UserPandasObject.__dict__.iteritems() \
+    user_methods = [(name, meth) for name, meth in UserPandasObject.__dict__.items() \
                      if isinstance(meth, (collections.Callable, property)) and name not in ignore_list]
 
     for name, meth in user_methods:
@@ -75,7 +75,7 @@ def get_methods(pandas_cls):
     # Wrap the magic_methods which won't be called via __getattribute__
     # Things like __add__ won't run through __getattribute__. We grab them
     # and wrap below
-    magic_methods = [(name, meth) for name, meth in pandas_cls.__dict__.iteritems() \
+    magic_methods = [(name, meth) for name, meth in pandas_cls.__dict__.items() \
                      if name.startswith('_') and isinstance(meth, collections.Callable) \
                     and name not in ignore_list]
 

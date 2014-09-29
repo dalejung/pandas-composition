@@ -31,7 +31,7 @@ def _get_meta(obj):
     meta.pop('_item_cache', None)
     return meta
 
-class UserFrame(pd.DataFrame):
+class UserFrame(pd.DataFrame, metaclass=PandasMeta):
     _pandas_type = pd.DataFrame
     pobj = None
     __metaclass__ = PandasMeta
@@ -134,7 +134,7 @@ class UserFrame(pd.DataFrame):
         """
         if boxer is None:
             return lambda x: x
-        if isinstance(boxer, types.TypeType) and issubclass(boxer, np.ndarray):
+        if isinstance(boxer, type) and issubclass(boxer, np.ndarray):
             return lambda val: val.view(boxer)
         if isinstance(boxer, collections.Callable):
             return boxer

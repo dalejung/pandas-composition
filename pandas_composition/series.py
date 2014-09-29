@@ -4,7 +4,7 @@ from numpy import ndarray
 
 from pandas_composition.metaclass import PandasMeta
 
-class UserSeries(pd.Series):
+class UserSeries(pd.Series, metaclass=PandasMeta):
     _pandas_type = pd.Series
     pobj = None
     __metaclass__ = PandasMeta
@@ -61,3 +61,5 @@ if "IPython" in sys.modules:  # pragma: no cover
         install_ipython_completers()
     except Exception:
         pass 
+
+us = UserSeries(range(10))

@@ -1,5 +1,5 @@
 from unittest import TestCase
-import cPickle as pickle
+import pickle
 
 import pandas as pd
 import pandas.util.testing as tm
