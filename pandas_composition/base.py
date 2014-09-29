@@ -92,7 +92,6 @@ class UserPandasObject(object):
         try:
             return self.__tr_getattr__(name)
         except AttributeError:
-            print('attr error', name)
             pass
 
         # Run through mro and use overridden values.
@@ -103,7 +102,6 @@ class UserPandasObject(object):
                 break
             type_dict = kls.__dict__
             if name in type_dict:
-                print('get attr', name, kls.__name__)
                 return object.__getattribute__(self, name)
 
         if hasattr(self.pobj, name):
