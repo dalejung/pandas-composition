@@ -1,9 +1,10 @@
 import collections
 import inspect
+from abc import ABCMeta
 
 from pandas_composition.base import UserPandasObject, _wrap_method
 
-class PandasMeta(type):
+class PandasMeta(ABCMeta):
     def __new__(cls, name, bases, dct):
         new_attrs = dct
         # test for UserSeries/UserFrame by looking for _pandas_type
