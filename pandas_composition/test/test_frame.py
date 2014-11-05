@@ -283,6 +283,14 @@ class TestUserFrame(TestCase):
         assert isinstance(df['bs'], BSeries)
         assert df.bs.bob == 'bob'
 
+        # error found 11-05-14 
+        bs = BSeries(range(10))
+        bs.bob = 'bob'
+        bs.name = 'hey'
+        df['bs'] = bs
+        # we have an error here because 'name' is propogated with _get_meta
+        df.bs.name = 'hi'
+
     def test_default_boxer_passthrough(self):
         """
         When an autoboxer Series has an init param,
@@ -382,5 +390,5 @@ if __name__ == '__main__':
     af = AutoBoxFrame(df)
     af.bob = 'hello'
 
-    #import nose
-    #nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)
+    import nose
+    nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)

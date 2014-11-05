@@ -137,6 +137,8 @@ class TestSeries(TestCase):
 
 us = UserSeries(range(10))
 us.view('i8')
+class SubSeries(UserSeries):
+    pass
 
 
 if __name__ == '__main__':

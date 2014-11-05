@@ -13,6 +13,7 @@ try:
 except ValueError:
     pass
 
+
 from pandas_composition.metaclass import PandasMeta
 
 def _get_meta(obj):
@@ -102,6 +103,7 @@ class UserFrame(pd.DataFrame, metaclass=PandasMeta):
             if hasattr(val, 'meta'):
                 val.meta.update(meta)
             else:
+                print(meta)
                 val.__dict__.update(meta)
         return val
 
