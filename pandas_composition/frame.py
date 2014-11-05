@@ -6,13 +6,9 @@ import numpy as np
 
 NDFrame = pd.core.generic.NDFrame
 _internal_names = NDFrame._internal_names[:]
-
-# Newer pandas does not have name in _internal_names
-try:
-    _internal_names.remove('name')
-except ValueError:
-    pass
-
+# need to add name back in. removed in newer panas
+_internal_names.append('name')
+_internal_names = set(_internal_names)
 
 from pandas_composition.metaclass import PandasMeta
 
