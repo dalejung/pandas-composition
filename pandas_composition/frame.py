@@ -99,7 +99,6 @@ class UserFrame(pd.DataFrame, metaclass=PandasMeta):
             if hasattr(val, 'meta'):
                 val.meta.update(meta)
             else:
-                print(meta)
                 val.__dict__.update(meta)
         return val
 
@@ -155,19 +154,20 @@ class UserFrame(pd.DataFrame, metaclass=PandasMeta):
         return meta
 
     def __getitem__(self, key):
-        if key in self.columns:
+        try:
+            if key in self.columns:
+                val = super(UserFrame, self).__getitem__(key)
+                # attempt wrap
+                val = self._wrap_series(key, val)
+                if type(val) in [pd.Series, pd.TimeSeries]:
+                    # if pandas object, try to wrap default
+                    meta = self.boxer_passthrough()
+                    val = self.default_boxer(val, **meta)
+                return val
+        except:
+            # fallback to regular dataframe
             val = super(UserFrame, self).__getitem__(key)
-            # attempt wrap
-            val = self._wrap_series(key, val)
-            if type(val) in [pd.Series, pd.TimeSeries]:
-                # if pandas object, try to wrap default
-                meta = self.boxer_passthrough()
-                val = self.default_boxer(val, **meta)
             return val
-
-        # fallback to regular dataframe
-        val = super(UserFrame, self).__getitem__(key)
-        return val
 
     def __tr_getattr__(self, key):
         """
