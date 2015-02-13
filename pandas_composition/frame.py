@@ -4,6 +4,8 @@ import collections
 import pandas as pd
 import numpy as np
 
+from six import with_metaclass
+
 NDFrame = pd.core.generic.NDFrame
 _internal_names = NDFrame._internal_names[:]
 # need to add name back in. removed in newer panas
@@ -28,10 +30,9 @@ def _get_meta(obj):
     meta.pop('_item_cache', None)
     return meta
 
-class UserFrame(pd.DataFrame, metaclass=PandasMeta):
+class UserFrame(pd.DataFrame, with_metaclass(PandasMeta)):
     _pandas_type = pd.DataFrame
     pobj = None
-    __metaclass__ = PandasMeta
     def __new__(cls, *args, **kwargs):
         # only pass the kwargs that pandas want
         panda_kwargs = {k:v for k, v in kwargs.items() if k in cls._init_args}

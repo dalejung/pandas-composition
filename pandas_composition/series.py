@@ -2,12 +2,13 @@ import pandas as pd
 import numpy as np
 from numpy import ndarray
 
+from six import with_metaclass
+
 from pandas_composition.metaclass import PandasMeta
 
-class UserSeries(pd.Series, metaclass=PandasMeta):
+class UserSeries(pd.Series, with_metaclass(PandasMeta)):
     _pandas_type = pd.Series
     pobj = None
-    __metaclass__ = PandasMeta
     def __new__(cls, *args, **kwargs):
         # since i am not calling npndarray.__new__, UserSeries.__array_finalize__ 
         # does not get called.

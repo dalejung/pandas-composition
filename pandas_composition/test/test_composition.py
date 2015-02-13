@@ -5,6 +5,8 @@ import pandas as pd
 import pandas.util.testing as tm
 import numpy as np
 
+from six import with_metaclass
+
 import pandas_composition as composition
 UserSeries = composition.UserSeries
 UserFrame = composition.UserFrame
@@ -106,11 +108,11 @@ class TestComposition(TestCase):
             def bob(self):
                 return self._bob
 
-        class CommonSeries(UserSeries, metaclass=CommonBase):
-            __metaclass__ = CommonBase
+        class CommonSeries(UserSeries, with_metaclass(CommonBase)):
+            pass
 
-        class CommonFrame(UserFrame, metaclass=CommonBase):
-            __metaclass__ = CommonBase
+        class CommonFrame(UserFrame, with_metaclass(CommonBase)):
+            pass
 
         bob = CommonBase._bob
 
