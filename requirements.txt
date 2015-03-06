@@ -1,4 +1,0 @@
-numpy
-cython
-numexpr
-git+https://github.com/dalejung/pandas.git@pandas_metaclass#egg=pandas

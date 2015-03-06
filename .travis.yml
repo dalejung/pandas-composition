@@ -6,8 +6,8 @@ python:
 
 # command to install dependencies
 install: 
-  - "pip install ."
-  - "cat requirements.txt | xargs pip install"
+  - ci_build.sh
+
 
 # command to run tests
 script: nosetests
