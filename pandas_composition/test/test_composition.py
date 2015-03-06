@@ -108,10 +108,10 @@ class TestComposition(TestCase):
             def bob(self):
                 return self._bob
 
-        class CommonSeries(UserSeries, with_metaclass(CommonBase)):
+        class CommonSeries(with_metaclass(CommonBase, UserSeries)):
             pass
 
-        class CommonFrame(UserFrame, with_metaclass(CommonBase)):
+        class CommonFrame(with_metaclass(CommonBase, UserFrame)):
             pass
 
         bob = CommonBase._bob

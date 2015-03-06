@@ -6,7 +6,7 @@ from six import with_metaclass
 
 from pandas_composition.metaclass import PandasMeta
 
-class UserSeries(pd.Series, with_metaclass(PandasMeta)):
+class UserSeries(with_metaclass(PandasMeta, pd.Series)):
     _pandas_type = pd.Series
     pobj = None
     def __new__(cls, *args, **kwargs):

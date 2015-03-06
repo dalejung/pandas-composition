@@ -30,7 +30,7 @@ def _get_meta(obj):
     meta.pop('_item_cache', None)
     return meta
 
-class UserFrame(pd.DataFrame, with_metaclass(PandasMeta)):
+class UserFrame(with_metaclass(PandasMeta, pd.DataFrame)):
     _pandas_type = pd.DataFrame
     pobj = None
     def __new__(cls, *args, **kwargs):
